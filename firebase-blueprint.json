@@ -1,0 +1,185 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile representation in compliance with the Philippine Data Privacy Act of 2012 (R.A. 10173)",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique user ID"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's full name"
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address"
+        },
+        "homeCourtId": {
+          "type": "string",
+          "description": "The ID of the user's home court"
+        },
+        "skillLevel": {
+          "type": "string",
+          "description": "The user's self-assessed skill level"
+        },
+        "duprId": {
+          "type": "string",
+          "description": "Optional DUPR ID"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of profile creation"
+        },
+        "dpaConsent": {
+          "type": "boolean",
+          "description": "Whether the user accepted the Data Privacy Act (DPA) policy"
+        },
+        "dpaConsentDate": {
+          "type": "string",
+          "description": "ISO timestamp of DPA consent"
+        }
+      },
+      "required": ["uid", "displayName", "email", "createdAt", "dpaConsent", "dpaConsentDate"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Court quality reviews and multi-dimensional performance scores",
+      "type": "object",
+      "properties": {
+        "courtId": {
+          "type": "string",
+          "description": "The ID of the court being reviewed"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the reviewing player"
+        },
+        "userName": {
+          "type": "string",
+          "description": "The full name of the reviewing player"
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "The email address of the reviewing player"
+        },
+        "ratingCourtQuality": {
+          "type": "integer",
+          "description": "Score from 1 to 5"
+        },
+        "ratingLighting": {
+          "type": "integer",
+          "description": "Score from 1 to 5"
+        },
+        "ratingParking": {
+          "type": "integer",
+          "description": "Score from 1 to 5"
+        },
+        "ratingCrowding": {
+          "type": "integer",
+          "description": "Score from 1 to 5"
+        },
+        "overallRating": {
+          "type": "number",
+          "description": "Average calculated score"
+        },
+        "comment": {
+          "type": "string",
+          "description": "The feedback text"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of review posting"
+        }
+      },
+      "required": [
+        "courtId",
+        "userId",
+        "userName",
+        "userEmail",
+        "ratingCourtQuality",
+        "ratingLighting",
+        "ratingParking",
+        "ratingCrowding",
+        "overallRating",
+        "comment",
+        "createdAt"
+      ]
+    },
+    "PlayEvent": {
+      "title": "PlayEvent",
+      "description": "Scheduled matchmaking sports activities",
+      "type": "object",
+      "properties": {
+        "courtId": {
+          "type": "string",
+          "description": "The ID of the court"
+        },
+        "courtName": {
+          "type": "string",
+          "description": "The name of the court"
+        },
+        "organizerId": {
+          "type": "string",
+          "description": "The ID of the host player"
+        },
+        "organizerName": {
+          "type": "string",
+          "description": "The full name of the host player"
+        },
+        "dateTime": {
+          "type": "string",
+          "description": "ISO timestamp of the activity"
+        },
+        "skillLevelTarget": {
+          "type": "string",
+          "description": "Target skill level bracket"
+        },
+        "maxPlayers": {
+          "type": "integer",
+          "description": "The maximum capacity of the match"
+        },
+        "joinedPlayerIds": {
+          "type": "array",
+          "description": "The IDs of players on the roster"
+        },
+        "joinedPlayerNames": {
+          "type": "array",
+          "description": "The full names of players on the roster"
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of rules and formats"
+        }
+      },
+      "required": [
+        "courtId",
+        "courtName",
+        "organizerId",
+        "organizerName",
+        "dateTime",
+        "skillLevelTarget",
+        "maxPlayers",
+        "joinedPlayerIds",
+        "joinedPlayerNames",
+        "description"
+      ]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Collection of DPA-compliant user profiles"
+    },
+    "courts/{courtId}/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Sub-collection of multi-dimensional player reviews nested under courts"
+    },
+    "play_events/{eventId}": {
+      "schema": { "$ref": "#/entities/PlayEvent" },
+      "description": "Collection of scheduled recreational game posts"
+    }
+  }
+}

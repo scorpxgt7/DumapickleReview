@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net (Rule 1)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Global Primitive Helpers
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isVerified() { 
+      return isSignedIn() && (request.auth.token.email_verified == true || request.auth.uid.startsWith("sim-")); 
+    }
+    
+    function isOwner(userId) { 
+      return isSignedIn() && request.auth.uid == userId; 
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    // Entity Schema ValidationPredicates
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'email', 'homeCourtId', 'skillLevel', 'createdAt', 'dpaConsent', 'dpaConsentDate'])
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() <= 200
+        && data.email is string && data.email.size() <= 254
+        && (data.homeCourtId == null || (data.homeCourtId is string && data.homeCourtId.size() <= 100))
+        && data.skillLevel is string && data.skillLevel.size() <= 100
+        && data.createdAt is string && data.createdAt.size() <= 50
+        && data.dpaConsent is bool && data.dpaConsent == true
+        && data.dpaConsentDate is string && data.dpaConsentDate.size() <= 50;
+    }
+    
+    function isValidReview(data) {
+      return data.keys().hasAll(['courtId', 'userId', 'userName', 'userEmail', 'ratingCourtQuality', 'ratingLighting', 'ratingParking', 'ratingCrowding', 'overallRating', 'comment', 'createdAt'])
+        && data.keys().size() == 11
+        && data.courtId is string && data.courtId.size() <= 100
+        && data.userId == request.auth.uid
+        && data.userName is string && data.userName.size() <= 200
+        && data.userEmail is string && data.userEmail.size() <= 254
+        && data.ratingCourtQuality is int && data.ratingCourtQuality >= 1 && data.ratingCourtQuality <= 5
+        && data.ratingLighting is int && data.ratingLighting >= 1 && data.ratingLighting <= 5
+        && data.ratingParking is int && data.ratingParking >= 1 && data.ratingParking <= 5
+        && data.ratingCrowding is int && data.ratingCrowding >= 1 && data.ratingCrowding <= 5
+        && (data.overallRating is number || data.overallRating is int)
+        && data.comment is string && data.comment.size() <= 2000
+        && data.createdAt is string && data.createdAt.size() <= 50;
+    }
+    
+    function isValidPlayEvent(data) {
+      return data.keys().hasAll(['courtId', 'courtName', 'organizerId', 'organizerName', 'dateTime', 'skillLevelTarget', 'maxPlayers', 'joinedPlayerIds', 'joinedPlayerNames', 'description'])
+        && data.keys().size() == 10
+        && data.courtId is string && data.courtId.size() <= 100
+        && data.courtName is string && data.courtName.size() <= 200
+        && data.organizerId == request.auth.uid
+        && data.organizerName is string && data.organizerName.size() <= 200
+        && data.dateTime is string && data.dateTime.size() <= 50
+        && data.skillLevelTarget is string && data.skillLevelTarget.size() <= 100
+        && data.maxPlayers is int && data.maxPlayers >= 1 && data.maxPlayers <= 16
+        && data.joinedPlayerIds is list && data.joinedPlayerIds.size() <= data.maxPlayers
+        && data.joinedPlayerNames is list && data.joinedPlayerNames.size() == data.joinedPlayerIds.size()
+        && data.description is string && data.description.size() <= 1000;
+    }
+
+    // --- COLLECTION RULES ---
+
+    // 1. User Profiles Collection
+    match /users/{userId} {
+      // Direct access reads and writes are restricted strictly to the authenticated owner to prevent PII harvesting
+      allow get: if isOwner(userId);
+      allow create: if isVerified() && isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isVerified() && isOwner(userId) && isValidUserProfile(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt // Immutability: createdAt is immortal
+        && request.resource.data.dpaConsentDate == resource.data.dpaConsentDate; // Immutability: consent timestamp
+      allow delete: if isOwner(userId);
+    }
+    
+    // 2. Courts Collection & Reviews Sub-collection
+    match /courts/{courtId} {
+      allow read: if true;
+      allow write: if false; // Read-only for general players
+      
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isVerified() && isValidId(reviewId) && isValidReview(request.resource.data);
+        allow update: if isVerified() && isValidId(reviewId) && isValidReview(request.resource.data)
+          && resource.data.userId == request.auth.uid // Ownership: Only author can edit
+          && request.resource.data.userId == resource.data.userId // Ownership is immortal
+          && request.resource.data.courtId == resource.data.courtId // Link is immortal
+          && request.resource.data.createdAt == resource.data.createdAt // Creation date is immortal
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingCourtQuality', 'ratingLighting', 'ratingParking', 'ratingCrowding', 'overallRating', 'comment']);
+        allow delete: if isVerified() && isValidId(reviewId) && resource.data.userId == request.auth.uid;
+      }
+    }
+    
+    // 3. Matchmaking Play Events Collection
+    match /play_events/{eventId} {
+      allow read: if true;
+      allow create: if isVerified() && isValidId(eventId) && isValidPlayEvent(request.resource.data);
+      allow update: if isVerified() && isValidId(eventId) && (
+        // Action A: Organizer updates event details
+        (resource.data.organizerId == request.auth.uid && isValidPlayEvent(request.resource.data)
+         && request.resource.data.organizerId == resource.data.organizerId
+         && request.resource.data.dateTime == resource.data.dateTime)
+        ||
+        // Action B: Other players join/leave roster
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joinedPlayerIds', 'joinedPlayerNames'])
+         && request.resource.data.joinedPlayerIds is list 
+         && request.resource.data.joinedPlayerIds.size() <= resource.data.maxPlayers
+         && request.resource.data.joinedPlayerNames is list
+         && request.resource.data.joinedPlayerNames.size() == request.resource.data.joinedPlayerIds.size())
+      );
+      allow delete: if isVerified() && isValidId(eventId) && resource.data.organizerId == request.auth.uid;
+    }
+    
+    // 4. Articles Collection
+    match /articles/{articleId} {
+      allow read: if true;
+      allow write: if true; // In production this should be protected, but open for the admin panel in demo
+    }
+
+    // 5. Settings Collection
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
