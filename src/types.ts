@@ -32,6 +32,7 @@ export interface Court {
   amenities: string[];
   description: string;
   image: string;
+  images?: string[];
   rating: number;
   reviewCount: number;
   isPremium?: boolean;

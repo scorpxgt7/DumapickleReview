@@ -16,7 +16,7 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&q=80&w=1000'
 ];
 
-export const INITIAL_COURTS: Court[] = [
+const RAW_COURTS: Court[] = [
   // ==========================================
   // DUMAGUETE CITY, NEGROS ORIENTAL
   // ==========================================
@@ -1376,3 +1376,15 @@ export const INITIAL_COURTS: Court[] = [
     isPremium: true
   }
 ];
+
+export const INITIAL_COURTS: Court[] = RAW_COURTS.map((court, idx) => ({
+  ...court,
+  images: court.images && court.images.length > 0 
+    ? court.images 
+    : [
+        court.image,
+        IMAGES[(idx + 1) % IMAGES.length],
+        IMAGES[(idx + 3) % IMAGES.length],
+        IMAGES[(idx + 5) % IMAGES.length]
+      ]
+}));

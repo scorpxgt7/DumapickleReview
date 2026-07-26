@@ -16,10 +16,13 @@ import SocialShareModal from './SocialShareModal';
 import AddCourtModal from './AddCourtModal';
 import VerifiedReviewerBadge from './VerifiedReviewerBadge';
 import { ToastContainer, ToastMessage } from './Toast';
+import { CourtListSkeleton } from './CourtSkeleton';
+import CheckInQRModal from './CheckInQRModal';
+import CourtImageCarousel from './CourtImageCarousel';
 import { 
   MapPin, SlidersHorizontal, Sparkles, Star, Sun, ShieldAlert,
   Compass, Check, Bookmark, ThumbsUp, Trash2, Calendar, Users, User as UserIcon, Share2, Map as MapIcon, Camera, X,
-  List, Layers, Grid, Plus
+  List, Layers, Grid, Plus, QrCode
 } from 'lucide-react';
 
 interface CourtDirectoryProps {
@@ -119,6 +122,25 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
   const [showFilters, setShowFilters] = useState(false);
   const [showMap, setShowMap] = useState(true);
 
+  // Skeleton loading states for search & filter perceived performance
+  const [isSearching, setIsSearching] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Initial load transition
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 350);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Brief skeleton animation on search query, city hub or filter update
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setIsSearching(false);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCity, filterIndoor, filterFee, filterLighting]);
+
   // Social Share modal state
   const [shareData, setShareData] = useState<{
     isOpen: boolean;
@@ -131,6 +153,9 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
     text: '',
     url: ''
   });
+
+  // Check-in QR Code Modal State
+  const [qrModalCourt, setQrModalCourt] = useState<Court | null>(null);
 
   // Synchronize external search query
   useEffect(() => {
@@ -270,6 +295,25 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
     handleOpenShare(selectedCourt);
   };
 
+  const handleOpenOnMap = (court: Court, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedCourt(court);
+    if (viewMode === 'list') {
+      setViewMode('split');
+    }
+    setTimeout(() => {
+      const mapElement = document.getElementById('court-google-maps-container');
+      if (mapElement) {
+        mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
+  const handleOpenQRModal = (court: Court, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setQrModalCourt(court);
+  };
+
   // Switch city and auto-select its first court
   const handleCityChange = (city: string) => {
     setSelectedCity(city);
@@ -340,6 +384,9 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
               </div>
             </div>
           )}
+
+          {/* Context-aware Live Court Weather Widget */}
+          <WeatherWidget city={selectedCity} />
         </div>
 
         {/* Search, View Modes & Filters */}
@@ -550,7 +597,9 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
               className="space-y-4 max-h-[55vh] overflow-y-auto pr-2"
               id="court-list-container"
             >
-              {filteredCourts.length === 0 ? (
+              {isInitialLoading || isSearching ? (
+                <CourtListSkeleton count={3} />
+              ) : filteredCourts.length === 0 ? (
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-12 text-center space-y-2">
                   <Compass className="w-10 h-10 text-slate-400 mx-auto" />
                   <h5 className="font-bold text-slate-800 dark:text-slate-200">No Courts Match Your Filters</h5>
@@ -572,19 +621,17 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
                           : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 hover:shadow-md'
                       }`}
                     >
-                      {/* Thumbnail */}
-                      <div className="w-full sm:w-48 h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 relative shrink-0">
-                        <img
-                          src={court.image}
-                          alt={court.name}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
+                      {/* Court Condition Photos Carousel */}
+                      <div className="w-full sm:w-52 h-36 shrink-0">
+                        <CourtImageCarousel
+                          images={court.images}
+                          fallbackImage={court.image}
+                          courtName={court.name}
+                          isPremium={court.isPremium}
+                          indoor={court.indoor}
+                          fee={court.fee}
+                          className="w-full h-full"
                         />
-                        {court.isPremium && (
-                          <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold tracking-wide px-2 py-1 rounded shadow-sm">
-                            Sponsored
-                          </span>
-                        )}
                       </div>
 
                       {/* Info Details */}
@@ -629,15 +676,35 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
                             </span>
                           </div>
 
-                          {/* Social Share Button */}
-                          <button
-                            onClick={(e) => handleOpenShare(court, e)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 hover:text-emerald-700 dark:hover:text-emerald-300 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition-all flex items-center gap-1"
-                            title="Share Court to Social Media"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                            Share
-                          </button>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              onClick={(e) => handleOpenQRModal(court, e)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm"
+                              title="Generate Check-in QR Code"
+                            >
+                              <QrCode className="w-3.5 h-3.5" />
+                              Check-in QR
+                            </button>
+
+                            <button
+                              onClick={(e) => handleOpenOnMap(court, e)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold transition-all flex items-center gap-1 border border-emerald-200/80 dark:border-emerald-800/80"
+                              title="Focus on Leaflet Map"
+                            >
+                              <MapIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:text-white" />
+                              Open on Map
+                            </button>
+
+                            {/* Social Share Button */}
+                            <button
+                              onClick={(e) => handleOpenShare(court, e)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 hover:text-emerald-700 dark:hover:text-emerald-300 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition-all flex items-center gap-1"
+                              title="Share Court to Social Media"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                              Share
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -665,25 +732,18 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
         {/* Selected Court Details & Multi-Dimensional Review System */}
         {selectedCourt ? (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm transition-colors duration-300" id="court-details-panel">
-            {/* Header cover image */}
-            <div className="h-36 bg-slate-100 dark:bg-slate-900 relative group overflow-hidden">
-              <img
-                src={selectedCourt.image}
-                alt={selectedCourt.name}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            {/* Header cover image carousel */}
+            <div className="h-52 bg-slate-100 dark:bg-slate-900 relative">
+              <CourtImageCarousel
+                images={selectedCourt.images}
+                fallbackImage={selectedCourt.image}
+                courtName={selectedCourt.name}
+                isPremium={selectedCourt.isPremium}
+                indoor={selectedCourt.indoor}
+                fee={selectedCourt.fee}
+                className="w-full h-full rounded-none rounded-t-2xl border-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent flex flex-col justify-between p-4">
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setLightboxPhoto(selectedCourt.image)}
-                    className="p-2 rounded-full bg-slate-900/70 text-white backdrop-blur-md hover:bg-slate-900 transition-colors flex items-center gap-1.5 text-xs font-bold shadow-lg"
-                    title="View Full Court Photo"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>View Photo</span>
-                  </button>
-                </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent pointer-events-none z-10">
                 <h3 className="font-display font-black text-white text-xl md:text-2xl leading-tight">
                   {selectedCourt.name}
                 </h3>
@@ -704,7 +764,23 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
                 <span className="text-xs text-slate-500 dark:text-slate-400">({selectedCourt.reviewCount} reviews)</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={(e) => handleOpenQRModal(selectedCourt, e)}
+                  className="py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 shadow-sm"
+                  title="Generate Check-in QR code for court arrival"
+                >
+                  <QrCode className="w-4 h-4" />
+                  Check-in QR
+                </button>
+                <button
+                  onClick={(e) => handleOpenOnMap(selectedCourt, e)}
+                  className="py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500"
+                  title="Locate on Leaflet map"
+                >
+                  <MapIcon className="w-4 h-4" />
+                  Open on Map
+                </button>
                 <button
                   onClick={handleShareCourt}
                   className="py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600"
@@ -973,6 +1049,14 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
             type: "success"
           });
         }}
+      />
+
+      {/* Check-in QR Modal */}
+      <CheckInQRModal
+        isOpen={!!qrModalCourt}
+        onClose={() => setQrModalCourt(null)}
+        court={qrModalCourt}
+        onAddToast={({ type, title, message }) => addToast({ title, description: message, type })}
       />
 
       {/* Subtle Toast Container */}
