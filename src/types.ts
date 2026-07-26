@@ -20,7 +20,7 @@ export interface UserProfile {
 export interface Court {
   id: string;
   name: string;
-  city: "Dumaguete" | "Cebu City" | "Metro Manila";
+  city: "Dumaguete" | "Negros Oriental" | "Metro Manila & Luzon" | "Visayas & Mindanao" | "International" | string;
   address: string;
   coordinates: {
     lat: number;

@@ -32,11 +32,11 @@ export default function Matchmaking({ currentUser, onShowConsentModal }: Matchma
 
   // Simulated player matches list (to simulate the matchmaking database)
   const simulatedPlayers = [
-    { name: "John Mark 'Dink' Teves", city: "Dumaguete", skill: "4.5 - Pro Level", home: "Dumaguete Pickleball & Sports Arena" },
-    { name: "Silliman Star Sasser", city: "Dumaguete", skill: "3.5 - Advanced", home: "Silliman University Activity Courts" },
-    { name: "Patricia Lim", city: "Cebu City", skill: "3.0 - Intermediate", home: "Cebu Pickleball Hub (Banilad)" },
-    { name: "Coach Mike G.", city: "Metro Manila", skill: "5.0 - Elite Pro", home: "BGC Arena Outdoor Courts" },
-    { name: "Brizuela 'Soft-Hands'", city: "Dumaguete", skill: "2.5 - Beginner+", home: "Rizal Boulevard Community Court" },
+    { name: "John Mark 'Dink' Teves", city: "Dumaguete", skill: "4.5 - Pro Level", home: "A-Courts Premium Pickleball & Community" },
+    { name: "Silliman Star Sasser", city: "Dumaguete", skill: "3.5 - Advanced", home: "Dumaguete Pickleball Club (Pantawan)" },
+    { name: "Patricia Lim", city: "Negros Oriental", skill: "3.0 - Intermediate", home: "PlayPro Active Courts (PAC) Sibulan" },
+    { name: "Coach Mike G.", city: "Metro Manila & Luzon", skill: "5.0 - Elite Pro", home: "Helios Pickleball Center Pasig" },
+    { name: "Brizuela 'Soft-Hands'", city: "Visayas & Mindanao", skill: "3.0 - Intermediate", home: "PicklePoint Iloilo" },
   ];
 
   const [selectedCityFilter, setSelectedCityFilter] = useState<string>("All");
@@ -506,9 +506,11 @@ export default function Matchmaking({ currentUser, onShowConsentModal }: Matchma
               className="bg-slate-50 border border-slate-100 rounded-lg p-1 text-xs text-slate-800 focus:outline-none"
             >
               <option value="All">All Regions</option>
-              <option value="Dumaguete">Dumaguete Hub</option>
-              <option value="Cebu City">Cebu City Hub</option>
-              <option value="Metro Manila">Metro Manila Hub</option>
+              <option value="Dumaguete">Dumaguete City</option>
+              <option value="Negros Oriental">Other Negros Oriental</option>
+              <option value="Metro Manila & Luzon">Metro Manila & Luzon</option>
+              <option value="Visayas & Mindanao">Visayas & Mindanao</option>
+              <option value="International">International</option>
             </select>
           </div>
 

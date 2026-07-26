@@ -245,7 +245,7 @@ export default function App() {
       uid: uid,
       displayName: displayName,
       email: email,
-      homeCourtId: "duma-sports-center", // Dumaguete sports arena as initial default
+      homeCourtId: "duma-a-courts", // A-Courts Dumaguete as initial default
       skillLevel: "3.0 - Intermediate",
       createdAt: new Date().toISOString(),
       dpaConsent: true,

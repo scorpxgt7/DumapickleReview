@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, Component } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import L from 'leaflet';
 import { Court } from '../types';
-import { MapPin, Sparkles, Navigation, Info, Layers, RefreshCw, AlertCircle } from 'lucide-react';
+import { MapPin, Sparkles, Navigation, Info, Layers, RefreshCw, AlertCircle, Plus, Minus, Compass } from 'lucide-react';
 
 const API_KEY = (
   process.env.GOOGLE_MAPS_PLATFORM_KEY ||
@@ -84,6 +84,7 @@ function LeafletCourtMap({ courts, selectedCourt, onSelectCourt }: CourtMapProps
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
+  const [currentZoom, setCurrentZoom] = useState<number>(12);
 
   const defaultCenter: [number, number] = selectedCourt?.coordinates 
     ? [selectedCourt.coordinates.lat, selectedCourt.coordinates.lng]
@@ -94,10 +95,10 @@ function LeafletCourtMap({ courts, selectedCourt, onSelectCourt }: CourtMapProps
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Initialize Leaflet map if not already done
+    // Initialize Leaflet map if not already done with custom zoom control disabled
     if (!leafletMapRef.current) {
       const map = L.map(mapContainerRef.current, {
-        zoomControl: true,
+        zoomControl: false,
         scrollWheelZoom: true,
       }).setView(defaultCenter, 12);
 
@@ -105,6 +106,10 @@ function LeafletCourtMap({ courts, selectedCourt, onSelectCourt }: CourtMapProps
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
       }).addTo(map);
+
+      map.on('zoomend', () => {
+        setCurrentZoom(map.getZoom());
+      });
 
       leafletMapRef.current = map;
     }
@@ -332,9 +337,80 @@ function LeafletCourtMap({ courts, selectedCourt, onSelectCourt }: CourtMapProps
     };
   }, []);
 
+  const handleZoomIn = () => {
+    if (leafletMapRef.current) {
+      leafletMapRef.current.zoomIn();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (leafletMapRef.current) {
+      leafletMapRef.current.zoomOut();
+    }
+  };
+
+  const handleRecenter = () => {
+    if (!leafletMapRef.current) return;
+    if (selectedCourt) {
+      leafletMapRef.current.setView([selectedCourt.coordinates.lat, selectedCourt.coordinates.lng], 14, { animate: true });
+      if (markersRef.current[selectedCourt.id]) {
+        markersRef.current[selectedCourt.id].openPopup();
+      }
+    } else if (courts.length > 0) {
+      const bounds = L.latLngBounds(courts.map(c => [c.coordinates.lat, c.coordinates.lng]));
+      leafletMapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+  };
+
   return (
     <div className="w-full h-full relative min-h-[380px] z-0">
       <div ref={mapContainerRef} className="w-full h-full min-h-[380px] md:min-h-[420px] rounded-b-3xl overflow-hidden" />
+
+      {/* Floating Custom Zoom Controls (Responsive & Dark/Light Mode Theme Aligned) */}
+      <div className="absolute top-4 right-4 z-[400] flex flex-col gap-1.5 p-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 rounded-2xl shadow-xl transition-all">
+        <button
+          type="button"
+          id="leaflet-zoom-in"
+          onClick={handleZoomIn}
+          title="Zoom In"
+          className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+          aria-label="Zoom in on map"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+
+        <div className="h-px bg-slate-200/80 dark:bg-slate-700/80 my-0.5 mx-1" />
+
+        <button
+          type="button"
+          id="leaflet-zoom-out"
+          onClick={handleZoomOut}
+          title="Zoom Out"
+          className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+          aria-label="Zoom out on map"
+        >
+          <Minus className="w-4 h-4" />
+        </button>
+
+        <div className="h-px bg-slate-200/80 dark:bg-slate-700/80 my-0.5 mx-1" />
+
+        <button
+          type="button"
+          id="leaflet-recenter"
+          onClick={handleRecenter}
+          title={selectedCourt ? `Recenter on ${selectedCourt.name}` : "Fit all courts"}
+          className="w-10 h-10 md:w-9 md:h-9 flex items-center justify-center rounded-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+          aria-label="Recenter court map view"
+        >
+          <Compass className="w-4 h-4 text-emerald-500" />
+        </button>
+      </div>
+
+      {/* Zoom scale indicator badge */}
+      <div className="absolute bottom-4 left-4 z-[400] px-2.5 py-1 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-xl text-[10px] font-extrabold text-slate-700 dark:text-slate-300 shadow-md flex items-center gap-1.5 pointer-events-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        OpenStreetMap • {currentZoom}x Zoom
+      </div>
     </div>
   );
 }

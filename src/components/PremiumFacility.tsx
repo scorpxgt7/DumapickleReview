@@ -16,7 +16,7 @@ export default function PremiumFacility() {
   const [newsletterError, setNewsletterError] = useState("");
 
   // Booking API Simulator State
-  const [selectedCourtId, setSelectedCourtId] = useState("duma-sports-center");
+  const [selectedCourtId, setSelectedCourtId] = useState("duma-a-courts");
   const [bookingDate, setBookingDate] = useState("");
   const [bookingTime, setBookingTime] = useState("17:00");
   const [rentPrice, setRentPrice] = useState(600); // PHP per hour
@@ -237,9 +237,12 @@ export default function PremiumFacility() {
                   onChange={(e) => setSelectedCourtId(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-800 text-xs p-2.5 rounded-xl text-white focus:outline-none"
                 >
-                  <option value="duma-sports-center">Dumaguete Sports Arena</option>
-                  <option value="cebu-banilad-hub">Cebu Banilad Hub</option>
-                  <option value="manila-bgc-courts">BGC Arena Manila</option>
+                  <option value="duma-a-courts">A-Courts Premium Pickleball (Bantayan)</option>
+                  <option value="duma-pickledome">The Pickledome Courts (Taclobo)</option>
+                  <option value="duma-burn-room">Burn Room Pickleball (Pulantubig)</option>
+                  <option value="luzon-helios-pasig">Helios Pickleball Center (Pasig)</option>
+                  <option value="vismin-picklepoint-iloilo">PicklePoint (Iloilo)</option>
+                  <option value="intl-jurong-singapore">Jurong Playgrounds (Singapore)</option>
                 </select>
               </div>
 

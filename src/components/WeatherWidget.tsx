@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 interface WeatherWidgetProps {
-  selectedCity: "Dumaguete" | "Cebu City" | "Metro Manila";
+  selectedCity: string;
   selectedCourt?: Court | null;
   onSelectIndoorFilter?: () => void;
 }
@@ -43,8 +43,10 @@ interface DailyForecast {
 // City coordinates mapping
 const CITY_COORDS: Record<string, { lat: number; lng: number; name: string }> = {
   "Dumaguete": { lat: 9.3090, lng: 123.2933, name: "Dumaguete City" },
-  "Cebu City": { lat: 10.3157, lng: 123.8854, name: "Cebu City" },
-  "Metro Manila": { lat: 14.5995, lng: 120.9842, name: "Metro Manila" },
+  "Negros Oriental": { lat: 9.3590, lng: 123.2840, name: "Negros Oriental" },
+  "Metro Manila & Luzon": { lat: 14.5995, lng: 120.9842, name: "Metro Manila & Luzon" },
+  "Visayas & Mindanao": { lat: 7.0731, lng: 125.6128, name: "Visayas & Mindanao" },
+  "International": { lat: 1.3329, lng: 103.7436, name: "Singapore / International" }
 };
 
 // Map WMO Weather Codes to Human Text & Icons

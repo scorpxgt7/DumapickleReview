@@ -16,10 +16,12 @@ interface AddCourtModalProps {
   onCourtSubmitted: (newCourt: Court) => void;
 }
 
-const CITY_COORDINATES: Record<"Dumaguete" | "Cebu City" | "Metro Manila", { lat: number; lng: number }> = {
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   "Dumaguete": { lat: 9.3090, lng: 123.2933 },
-  "Cebu City": { lat: 10.3157, lng: 123.8854 },
-  "Metro Manila": { lat: 14.5547, lng: 121.0244 }
+  "Negros Oriental": { lat: 9.3590, lng: 123.2840 },
+  "Metro Manila & Luzon": { lat: 14.5547, lng: 121.0244 },
+  "Visayas & Mindanao": { lat: 7.0731, lng: 125.6128 },
+  "International": { lat: 1.3329, lng: 103.7436 }
 };
 
 const PRESET_COURT_IMAGES = [
@@ -79,7 +81,7 @@ function compressImage(file: File, maxWidth = 900, maxHeight = 900, quality = 0.
 
 export default function AddCourtModal({ isOpen, onClose, currentUser, onCourtSubmitted }: AddCourtModalProps) {
   const [name, setName] = useState("");
-  const [city, setCity] = useState<"Dumaguete" | "Cebu City" | "Metro Manila">("Dumaguete");
+  const [city, setCity] = useState<string>("Dumaguete");
   const [address, setAddress] = useState("");
   const [indoor, setIndoor] = useState(false);
   const [fee, setFee] = useState<"Free" | "Paid">("Free");
@@ -108,10 +110,11 @@ export default function AddCourtModal({ isOpen, onClose, currentUser, onCourtSub
 
   if (!isOpen) return null;
 
-  const handleCityChange = (newCity: "Dumaguete" | "Cebu City" | "Metro Manila") => {
+  const handleCityChange = (newCity: string) => {
     setCity(newCity);
-    setLat(CITY_COORDINATES[newCity].lat);
-    setLng(CITY_COORDINATES[newCity].lng);
+    const coords = CITY_COORDINATES[newCity] || CITY_COORDINATES["Dumaguete"];
+    setLat(coords.lat);
+    setLng(coords.lng);
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -369,9 +372,11 @@ export default function AddCourtModal({ isOpen, onClose, currentUser, onCourtSub
                 onChange={(e) => handleCityChange(e.target.value as any)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="Dumaguete">Dumaguete (Negros Oriental)</option>
-                <option value="Cebu City">Cebu City</option>
-                <option value="Metro Manila">Metro Manila</option>
+                <option value="Dumaguete">Dumaguete City</option>
+                <option value="Negros Oriental">Other Negros Oriental Municipalities</option>
+                <option value="Metro Manila & Luzon">Metro Manila & Luzon</option>
+                <option value="Visayas & Mindanao">Other Visayas & Mindanao</option>
+                <option value="International">International</option>
               </select>
             </div>
 

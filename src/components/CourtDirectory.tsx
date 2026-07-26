@@ -15,6 +15,7 @@ import WeatherWidget from './WeatherWidget';
 import SocialShareModal from './SocialShareModal';
 import AddCourtModal from './AddCourtModal';
 import VerifiedReviewerBadge from './VerifiedReviewerBadge';
+import { ToastContainer, ToastMessage } from './Toast';
 import { 
   MapPin, SlidersHorizontal, Sparkles, Star, Sun, ShieldAlert,
   Compass, Check, Bookmark, ThumbsUp, Trash2, Calendar, Users, User as UserIcon, Share2, Map as MapIcon, Camera, X,
@@ -29,14 +30,32 @@ interface CourtDirectoryProps {
 }
 
 export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowConsentModal, externalSearchQuery = "" }: CourtDirectoryProps) {
-  // Cities list
-  const cities: Array<"Dumaguete" | "Cebu City" | "Metro Manila"> = ["Dumaguete", "Cebu City", "Metro Manila"];
+  // Cities & Regions list
+  const cities: string[] = [
+    "Dumaguete",
+    "Negros Oriental",
+    "Metro Manila & Luzon",
+    "Visayas & Mindanao",
+    "International"
+  ];
   
   // Selected City (Default is Dumaguete - Philippine Pickleball Capital!)
-  const [selectedCity, setSelectedCity] = useState<"Dumaguete" | "Cebu City" | "Metro Manila">("Dumaguete");
+  const [selectedCity, setSelectedCity] = useState<string>("Dumaguete");
   const [courts, setCourts] = useState<Court[]>(INITIAL_COURTS);
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(INITIAL_COURTS[0]); // default selected is the main Dumaguete court
   const [showAddCourtModal, setShowAddCourtModal] = useState(false);
+
+  // Toast notifications state
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    setToasts(prev => [...prev, { ...toast, id }]);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   // Subscribe to submitted courts from Firestore & Local Storage
   useEffect(() => {
@@ -252,13 +271,24 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
   };
 
   // Switch city and auto-select its first court
-  const handleCityChange = (city: "Dumaguete" | "Cebu City" | "Metro Manila") => {
+  const handleCityChange = (city: string) => {
     setSelectedCity(city);
     const firstOfNewCity = courts.find(c => c.city === city);
     if (firstOfNewCity) {
       setSelectedCourt(firstOfNewCity);
     } else {
       setSelectedCourt(null);
+    }
+  };
+
+  const getCityLabel = (cityKey: string) => {
+    switch (cityKey) {
+      case "Dumaguete": return "Dumaguete City";
+      case "Negros Oriental": return "Negros Oriental Municipalities";
+      case "Metro Manila & Luzon": return "Metro Manila & Luzon";
+      case "Visayas & Mindanao": return "Visayas & Mindanao";
+      case "International": return "International";
+      default: return cityKey;
     }
   };
 
@@ -278,19 +308,19 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
             </div>
             
             {/* Hub Switchers */}
-            <div className="flex gap-1 bg-slate-800 p-1 rounded-xl">
+            <div className="flex flex-wrap gap-1 bg-slate-800 p-1.5 rounded-2xl w-full">
               {cities.map(city => (
                 <button
                   key={city}
-                  id={`hub-tab-${city.toLowerCase().replace(" ", "-")}`}
+                  id={`hub-tab-${city.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
                   onClick={() => handleCityChange(city)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex-1 min-w-[120px] text-center ${
                     selectedCity === city 
-                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/10' 
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/10 font-bold' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
                 >
-                  {city}
+                  {getCityLabel(city)}
                 </button>
               ))}
             </div>
@@ -685,7 +715,14 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
                 </button>
                 <button
                   id="set-homecourt-btn"
-                  onClick={() => onSetHomeCourt(selectedCourt.id)}
+                  onClick={() => {
+                    onSetHomeCourt(selectedCourt.id);
+                    addToast({
+                      title: "Home Court Set",
+                      description: `"${selectedCourt.name}" is now saved as your home court.`,
+                      type: "success"
+                    });
+                  }}
                   className={`py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     currentUser?.homeCourtId === selectedCourt.id
                       ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-100'
@@ -775,6 +812,11 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
                   if (mockRecord) {
                     setReviews(prev => [mockRecord, ...prev]);
                   }
+                  addToast({
+                    title: "Review Submitted",
+                    description: `Your rating and review for "${selectedCourt.name}" have been published.`,
+                    type: "success"
+                  });
                 }} 
               />
 
@@ -925,8 +967,16 @@ export default function CourtDirectory({ currentUser, onSetHomeCourt, onShowCons
         currentUser={currentUser}
         onCourtSubmitted={(newCourt) => {
           setSelectedCourt(newCourt);
+          addToast({
+            title: "Court Added Successfully",
+            description: `"${newCourt.name}" has been added and saved to the directory.`,
+            type: "success"
+          });
         }}
       />
+
+      {/* Subtle Toast Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
