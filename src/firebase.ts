@@ -5,13 +5,19 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the custom database ID provisioned for this applet
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Initialize Firestore with long-polling fallback for proxy/container compatibility
+export const db = initializeFirestore(
+  app,
+  {
+    experimentalForceLongPolling: true
+  },
+  firebaseConfig.firestoreDatabaseId
+);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();

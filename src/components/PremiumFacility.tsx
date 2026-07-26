@@ -31,12 +31,12 @@ export default function PremiumFacility() {
     { label: "Estimated Ad Earnings", value: "₱3,450.00", change: "Programmatic CPM" },
   ];
 
-  // Shopee Affiliate Ad campaign mock
+  // Lazada Affiliate Ad campaign promo
   const promoCampaign = {
     title: "Official Selkirk Vanguard Power Air Series",
     brand: "Selkirk Philippines",
-    desc: "Get an exclusive 10% discount using code DUMA-PICKLE at checkout on Shopee!",
-    link: "https://shopee.ph/search?keyword=selkirk+pickleball+paddle"
+    desc: "Get an exclusive 10% discount using code DUMA-PICKLE at checkout on Lazada!",
+    link: "https://www.lazada.com.ph/catalog/?q=selkirk+pickleball+paddle"
   };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {

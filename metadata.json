@@ -1,7 +1,7 @@
 {
   "name": "Remix: Duma Pickleball Platform",
   "description": "The ultimate mobile-first Pickleball Review \u0026 Community Platform for the Philippine market, covering Metro Manila, Cebu City, and more.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera"],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

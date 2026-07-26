@@ -76,7 +76,7 @@ export default function PrivacyDpaDocs({ onClose, showToS = false }: PrivacyDpaD
               <p>To provide community reviews, home court preferences, and interactive matchmaking, we collect:</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li><strong>Identity Credentials:</strong> Full name, email address, profile picture (via Google authentication).</li>
-                <li><strong>Sports Profile:</strong> Preferred skill level, DUPR ID, home court assignments.</li>
+                <li><strong>Sports Profile:</strong> Preferred skill level, player rating ID, home court assignments.</li>
                 <li><strong>User-Generated Content:</strong> Custom ratings (court quality, lighting, parking, crowding) and textual reviews.</li>
               </ul>
             </section>

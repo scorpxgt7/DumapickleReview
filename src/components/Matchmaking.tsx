@@ -32,7 +32,7 @@ export default function Matchmaking({ currentUser, onShowConsentModal }: Matchma
 
   // Simulated player matches list (to simulate the matchmaking database)
   const simulatedPlayers = [
-    { name: "John Mark 'Dink' Teves", city: "Dumaguete", skill: "4.5 - Pro / DUPR Registered", home: "Dumaguete Pickleball & Sports Arena" },
+    { name: "John Mark 'Dink' Teves", city: "Dumaguete", skill: "4.5 - Pro Level", home: "Dumaguete Pickleball & Sports Arena" },
     { name: "Silliman Star Sasser", city: "Dumaguete", skill: "3.5 - Advanced", home: "Silliman University Activity Courts" },
     { name: "Patricia Lim", city: "Cebu City", skill: "3.0 - Intermediate", home: "Cebu Pickleball Hub (Banilad)" },
     { name: "Coach Mike G.", city: "Metro Manila", skill: "5.0 - Elite Pro", home: "BGC Arena Outdoor Courts" },
@@ -319,7 +319,7 @@ export default function Matchmaking({ currentUser, onShowConsentModal }: Matchma
                   <option value="1.5 - 2.0 (Beginner)">1.5 - 2.0 (Beginner)</option>
                   <option value="2.5 - 3.0 (Intermediate)">2.5 - 3.0 (Intermediate)</option>
                   <option value="3.5 - 4.0 (Advanced)">3.5 - 4.0 (Advanced)</option>
-                  <option value="4.5+ (Pro / DUPR Level)">4.5+ (Pro / DUPR Level)</option>
+                  <option value="4.5+ (Pro Level)">4.5+ (Pro Level)</option>
                 </select>
               </div>
 
@@ -492,7 +492,7 @@ export default function Matchmaking({ currentUser, onShowConsentModal }: Matchma
         <div className="bg-white p-5 rounded-3xl border border-slate-100 space-y-4">
           <div className="space-y-1">
             <h4 className="font-display font-bold text-slate-900 text-base flex items-center gap-1.5">
-              <Trophy className="w-5 h-5 text-amber-500" /> DUPR Matchmaker Panel
+              <Trophy className="w-5 h-5 text-amber-500" /> Community Matchmaker Panel
             </h4>
             <p className="text-xs text-slate-500">Find and connect with local players matching your tier & location</p>
           </div>

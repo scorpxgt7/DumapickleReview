@@ -18,8 +18,8 @@ export const INITIAL_COURTS: Court[] = [
     amenities: ["Parking", "Showers", "Pro Shop", "Equipment Rental", "Restrooms", "Canteen", "Coaching Staff"],
     description: "The newly opened, absolute largest dedicated pickleball court facility in the Philippines. Features 12 state-of-the-art cushioned courts, high-end LED illumination, and international standards. Unofficially cementing Dumaguete as the Pickleball Capital of the Philippines.",
     image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Outdoor_pickleball_courts.jpg",
-    rating: 4.9,
-    reviewCount: 38,
+    rating: 0,
+    reviewCount: 0,
     isPremium: true
   },
   {
@@ -34,8 +34,8 @@ export const INITIAL_COURTS: Court[] = [
     amenities: ["Restrooms", "Spectator Benches", "Food Vendors Nearby"],
     description: "A lively seafront court open to the public. Perfect for morning play or breezy evening matches under high-quality floodlights. A popular gathering spot for Dumaguete's tight-knit local pickleball family.",
     image: "https://upload.wikimedia.org/wikipedia/commons/7/71/Pickleball_court_in_La_Crosse%2C_Wisconsin_01.jpg",
-    rating: 4.6,
-    reviewCount: 22
+    rating: 0,
+    reviewCount: 0
   },
   {
     id: "duma-silliman-court",
@@ -49,8 +49,8 @@ export const INITIAL_COURTS: Court[] = [
     amenities: ["Parking", "Restrooms", "Drinking Fountain"],
     description: "Outdoor university recreational courts. Excellent student-friendly vibe, available for open play during afternoons and weekends. Home court to the Silliman Pickleball Club.",
     image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Parc_des_Moissons%2C_terrains_de_pickleball.jpg",
-    rating: 4.3,
-    reviewCount: 14
+    rating: 0,
+    reviewCount: 0
   },
   {
     id: "cebu-banilad-hub",
@@ -64,8 +64,8 @@ export const INITIAL_COURTS: Court[] = [
     amenities: ["Parking", "Showers", "Pro Shop", "Restrooms", "Air Conditioning Lobby"],
     description: "Premium indoor venue catering to players in Metro Cebu. Well-maintained courts, active training leagues, and regular beginner clinics.",
     image: "https://upload.wikimedia.org/wikipedia/commons/e/e8/20251212_pickleball_pitch_poliforum_playa_del_carmen.jpg",
-    rating: 4.7,
-    reviewCount: 19,
+    rating: 0,
+    reviewCount: 0,
     isPremium: true
   },
   {
@@ -78,10 +78,10 @@ export const INITIAL_COURTS: Court[] = [
     fee: "Paid",
     lighting: true,
     amenities: ["Parking", "Restrooms", "Equipment Rental", "Lounge Area"],
-    description: "High-octane urban pickleball center in the heart of Bonifacio Global City. Known for professional players, DUPR matching events, and prime location.",
+    description: "High-octane urban pickleball center in the heart of Bonifacio Global City. Known for professional players, competitive matching events, and prime location.",
     image: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Parc_Edmour-J.-Harvey%2C_terrains_de_pickleball.jpg",
-    rating: 4.8,
-    reviewCount: 45,
+    rating: 0,
+    reviewCount: 0,
     isPremium: true
   }
 ];

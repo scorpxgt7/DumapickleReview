@@ -23,6 +23,7 @@ import Matchmaking from './components/Matchmaking';
 import PremiumFacility from './components/PremiumFacility';
 import DpaNotice from './components/DpaNotice';
 import PrivacyDpaDocs from './components/PrivacyDpaDocs';
+import VerifiedReviewerBadge from './components/VerifiedReviewerBadge';
 import LatestNews from './components/LatestNews';
 import AdminDashboard from './components/AdminDashboard';
 import { onSnapshot } from 'firebase/firestore';
@@ -105,6 +106,8 @@ export default function App() {
         if (data.slides && data.slides.length > 0) setCarouselSlides(data.slides);
         if (data.layout) setLayoutSettings(data.layout);
       }
+    }, (err) => {
+      console.warn("Firestore settings onSnapshot warning:", err);
     });
     return () => unsub();
   }, []);
@@ -379,22 +382,19 @@ export default function App() {
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <button
-              onClick={() => setShowAdmin(true)}
-              className="py-2 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              Admin
-            </button>
+
             {profile ? (
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 p-1.5 rounded-2xl pl-3">
-                <div className="hidden md:block text-right">
-                  <h5 className="text-xs font-bold text-slate-800">{profile.displayName}</h5>
-                  <p className="text-[9px] text-emerald-600 font-bold">{profile.skillLevel}</p>
+              <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-1.5 rounded-2xl pl-3">
+                <div className="hidden md:flex flex-col items-end">
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-xs font-bold text-slate-800 dark:text-slate-100">{profile.displayName}</h5>
+                    <VerifiedReviewerBadge profile={profile} size="xs" showText={false} />
+                  </div>
+                  <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">{profile.skillLevel}</p>
                 </div>
                 
                 {/* User avatar icon */}
-                <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
+                <div className="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs relative">
                   <UserIcon className="w-4 h-4" />
                 </div>
 
@@ -467,65 +467,91 @@ export default function App() {
           1. REVIEW AGGREGATOR HERO SECTION
           Sliding carousel hero with a massive search bar and 3 quick action links.
         */}
-        <div 
-          className="relative w-full rounded-3xl overflow-hidden shadow-xl flex items-center justify-center py-20 px-6 md:px-12 transition-all duration-700" 
-          id="hero-banner-section"
-        >
-          {/* Sliding Carousel Background */}
-          {carouselSlides.map((slide, idx) => (
+        {(() => {
+          const safeSlideIndex = carouselSlides.length > 0 ? (currentSlide % carouselSlides.length + carouselSlides.length) % carouselSlides.length : 0;
+          const activeSlide = carouselSlides[safeSlideIndex] || {
+            badge: "Negros Oriental • Philippines",
+            title: "DUMA PICKLE: Connecting the Racket Revolution",
+            subtitle: "The ultimate court directory, player review hub, and matchmaking scheduler in Dumaguete.",
+            image: "https://upload.wikimedia.org/wikipedia/commons/3/39/Outdoor_pickleball_courts.jpg"
+          };
+
+          return (
             <div 
-              key={idx}
-              className={`absolute inset-0 transition-opacity duration-1000 ${currentSlide === idx ? 'opacity-100' : 'opacity-0'}`}
+              className="relative w-full rounded-3xl overflow-hidden shadow-xl flex items-center justify-center py-20 px-6 md:px-12 transition-all duration-700" 
+              id="hero-banner-section"
             >
-              <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-slate-900/60" />
-            </div>
-          ))}
+              {/* Sliding Carousel Background */}
+              {carouselSlides.map((slide, idx) => {
+                const imgUrl = (slide.image && slide.image.trim()) ? slide.image.trim() : "https://upload.wikimedia.org/wikipedia/commons/3/39/Outdoor_pickleball_courts.jpg";
+                return (
+                  <div 
+                    key={idx}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${safeSlideIndex === idx ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <img 
+                      src={imgUrl} 
+                      alt={slide.title || "Hero Banner"} 
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== "https://upload.wikimedia.org/wikipedia/commons/3/39/Outdoor_pickleball_courts.jpg") {
+                          target.src = "https://upload.wikimedia.org/wikipedia/commons/3/39/Outdoor_pickleball_courts.jpg";
+                        }
+                      }}
+                      className="w-full h-full object-cover" 
+                    />
+                    <div className="absolute inset-0 bg-slate-900/60" />
+                  </div>
+                );
+              })}
 
-          <div className="relative z-20 w-full max-w-4xl mx-auto flex flex-col items-center text-center space-y-8">
-            
-            <div className="space-y-4">
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-400 tracking-widest block bg-slate-900/50 backdrop-blur-sm w-max mx-auto px-4 py-1.5 rounded-full border border-emerald-500/30">
-                {carouselSlides[currentSlide]?.badge}
-              </span>
-              <h2 className="text-4xl md:text-6xl font-display font-black tracking-tight text-white drop-shadow-md transition-all duration-500">
-                {carouselSlides[currentSlide]?.title}
-              </h2>
-              <p className="text-slate-200 text-lg md:text-xl font-sans drop-shadow max-w-2xl mx-auto transition-all duration-500">
-                {carouselSlides[currentSlide]?.subtitle}
-              </p>
-            </div>
+              <div className="relative z-20 w-full max-w-4xl mx-auto flex flex-col items-center text-center space-y-8">
+                
+                <div className="space-y-4">
+                  <span className="text-xs md:text-sm uppercase font-bold text-emerald-400 tracking-widest block bg-slate-900/50 backdrop-blur-sm w-max mx-auto px-4 py-1.5 rounded-full border border-emerald-500/30">
+                    {activeSlide.badge || "Pickleball Hub"}
+                  </span>
+                  <h2 className="text-4xl md:text-6xl font-display font-black tracking-tight text-white drop-shadow-md transition-all duration-500">
+                    {activeSlide.title || "DUMA PICKLE"}
+                  </h2>
+                  <p className="text-slate-200 text-lg md:text-xl font-sans drop-shadow max-w-2xl mx-auto transition-all duration-500">
+                    {activeSlide.subtitle || "The ultimate court directory and player review hub."}
+                  </p>
+                </div>
 
-            {/* Massive Search Form */}
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                setHeroSearchQuery(heroSearchText);
-                scrollToSection("court-reviews-section");
-              }}
-              className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-col md:flex-row items-center gap-2 w-full shadow-2xl focus-within:ring-4 focus-within:ring-emerald-500/50 transition-all max-w-3xl"
-              id="hero-inline-search-form"
-            >
-              <div className="relative flex-1 pl-4 flex items-center gap-3 w-full">
-                <Compass className="w-6 h-6 text-emerald-600 shrink-0" />
-                <input
-                  type="text"
-                  value={heroSearchText}
-                  onChange={(e) => setHeroSearchText(e.target.value)}
-                  placeholder="Search for courts, clubs, or paddles..."
-                  className="bg-transparent border-none text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-lg md:text-xl focus:ring-0 focus:outline-none w-full py-3"
-                />
+                {/* Massive Search Form */}
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setHeroSearchQuery(heroSearchText);
+                    scrollToSection("court-reviews-section");
+                  }}
+                  className="bg-white dark:bg-slate-800 p-2 rounded-2xl flex flex-col md:flex-row items-center gap-2 w-full shadow-2xl focus-within:ring-4 focus-within:ring-emerald-500/50 transition-all max-w-3xl"
+                  id="hero-inline-search-form"
+                >
+                  <div className="relative flex-1 pl-4 flex items-center gap-3 w-full">
+                    <Compass className="w-6 h-6 text-emerald-600 shrink-0" />
+                    <input
+                      type="text"
+                      value={heroSearchText}
+                      onChange={(e) => setHeroSearchText(e.target.value)}
+                      placeholder="Search for courts, clubs, or paddles..."
+                      className="bg-transparent border-none text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-lg md:text-xl focus:ring-0 focus:outline-none w-full py-3"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-base md:text-lg font-bold py-4 px-8 rounded-xl transition-all shadow-md w-full md:w-auto shrink-0"
+                  >
+                    Search
+                  </button>
+                </form>
+                
               </div>
-              <button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-base md:text-lg font-bold py-4 px-8 rounded-xl transition-all shadow-md w-full md:w-auto shrink-0"
-              >
-                Search
-              </button>
-            </form>
-            
-          </div>
-        </div>
+            </div>
+          );
+        })()}
 
         {/* 3 Link Features Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8 border-b border-slate-200 dark:border-slate-800 pb-16">
@@ -552,7 +578,7 @@ export default function App() {
               <Activity className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">DUPR Match Maker Panel</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Community Match Maker Panel</h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
                 Schedule games, configure maximum players, filter matching skill-level brackets, and coordinate live roster sheets securely.
               </p>
@@ -701,7 +727,10 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               {/* Profile Details summary card */}
               <div className="bg-slate-950 p-4 rounded-2xl space-y-2 border border-slate-800">
-                <span className="text-[9px] text-slate-500 uppercase font-bold block">Current Profile Record</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] text-slate-500 uppercase font-bold block">Current Profile Record</span>
+                  <VerifiedReviewerBadge profile={profile} size="xs" showProgress={true} />
+                </div>
                 <p className="text-xs font-bold text-white">{profile.displayName}</p>
                 <p className="text-[10px] text-slate-400">{profile.email}</p>
                 <p className="text-[10px] text-emerald-400 font-mono">UID: {profile.uid.substring(0, 16)}...</p>
@@ -772,7 +801,7 @@ export default function App() {
           </div>
 
           <div className="md:col-span-3 space-y-3">
-            <h5 className="font-bold text-white text-xs uppercase tracking-wider">Philippine Legal Links</h5>
+            <h5 className="font-bold text-white text-xs uppercase tracking-wider">Philippine Legal & Admin</h5>
             <ul className="space-y-2">
               <li>
                 <button onClick={() => setShowDpaDocsModal("privacy")} className="hover:text-white hover:underline transition-all">
@@ -782,6 +811,11 @@ export default function App() {
               <li>
                 <button onClick={() => setShowDpaDocsModal("tos")} className="hover:text-white hover:underline transition-all">
                   Terms of Service
+                </button>
+              </li>
+              <li>
+                <button onClick={() => setShowAdmin(true)} className="text-amber-400 hover:text-amber-300 hover:underline transition-all flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Admin Portal
                 </button>
               </li>
               <li>

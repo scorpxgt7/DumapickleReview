@@ -9,10 +9,12 @@ export interface UserProfile {
   email: string;
   homeCourtId: string | null;
   skillLevel: string;
-  duprId?: string;
+  playerRatingId?: string;
   createdAt: string;
   dpaConsent: boolean;
   dpaConsentDate: string;
+  reviewedCourtIds?: string[];
+  isVerifiedReviewer?: boolean;
 }
 
 export interface Court {
@@ -33,6 +35,10 @@ export interface Court {
   rating: number;
   reviewCount: number;
   isPremium?: boolean;
+  status?: 'approved' | 'pending';
+  submittedBy?: string;
+  submittedByUid?: string;
+  createdAt?: string;
 }
 
 export interface Review {
@@ -47,7 +53,9 @@ export interface Review {
   ratingCrowding: number; // 1-5
   overallRating: number; // calculated
   comment: string;
+  photos?: string[];
   createdAt: string;
+  isVerifiedReviewer?: boolean;
 }
 
 export interface Paddle {
@@ -64,6 +72,7 @@ export interface Paddle {
   description: string;
   affiliateLink: string;
   image: string;
+  category?: "paddle" | "edge-guard" | "lead-tape" | "eraser" | "cover" | "accessory";
 }
 
 export interface PlayEvent {
@@ -79,3 +88,21 @@ export interface PlayEvent {
   joinedPlayerNames: string[];
   description: string;
 }
+
+export interface Article {
+  id?: string;
+  title: string;
+  category: "Community" | "Tutorial" | "Privacy & Tech" | "Tournament" | "Pro Tactics" | string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  readTime: string;
+  image: string;
+  tag: string;
+  status?: 'published' | 'draft';
+  featured?: boolean;
+  views?: number;
+  createdAt?: string;
+}
+

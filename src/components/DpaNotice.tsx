@@ -41,7 +41,7 @@ export default function DpaNotice({ onConsent, onDecline }: DpaNoticeProps) {
               <p className="text-slate-600 text-sm leading-relaxed">
                 Welcome to the **Duma Pickleball Platform** (dumapicklecourtfinder.online). In compliance with the 
                 <strong> Philippine Data Privacy Act of 2012 (DPA)</strong>, we require your active consent to collect 
-                and securely process your sports profile, email, DUPR parameters, and user-submitted reviews.
+                and securely process your sports profile, email, skill level parameters, and user-submitted reviews.
               </p>
             </div>
 
