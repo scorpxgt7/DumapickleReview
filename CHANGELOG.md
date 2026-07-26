@@ -25,8 +25,37 @@
 ### Outcome & Reviewer Notes
 **Status:** Partial Success
 **Notes:**
-- Build and type-check passed. No vulnerabilities reported by `npm audit` at time of scan.
-- There is no test script; adding tests and a `test` script is recommended.
-- The production bundle includes a large JS chunk; consider code-splitting/manual chunking.
+
+## Upcoming Changes
+**Note:** This section will be updated with new entries in future patches.
 - `package-lock.json` was created by `npm install` and is included in the branch for deterministic installs.
-- No database migrations were run and no schema changes performed.
+
+## 2026-07-26 - Add Vitest scaffold / Sanity Test
+
+**Goal:** Add a basic Vitest testing scaffold and a sanity-check test so `npm test` runs successfully
+**Branch:** `agent/project-audit`
+**Iterations Used:** 2 / 15
+
+### PIV Cycle Summary
+
+**1. Plan (P)**
+*   **Approach:** Add `vitest` as a dev dependency, add a `test` script that runs tests once (`vitest --run`), and create a simple `src/__tests__/sanity.test.ts` that asserts `true`.
+*   **Scope:** Files created: `src/__tests__/sanity.test.ts`. Files modified: `package.json` (added `test` script). `package-lock.json` updated.
+
+**2. Implement (I)**
+*   **Files Modified/Created:** 
+    *   `package.json` - Added `test` script
+    *   `src/__tests__/sanity.test.ts` - Simple sanity test
+    *   `package-lock.json` - Updated to include `vitest` and related deps
+*   **Migrations Generated:** None
+*   **Commits:** `agent(project-audit): add Vitest scaffold and sanity test`
+
+**3. Validate (V)**
+*   **Test Results:** Pass - `npm test` ran Vitest in CI mode; 1 test passed
+*   **Build Status:** N/A for this cycle
+*   **Lint/Type Checks:** N/A for this cycle
+
+### Outcome & Reviewer Notes
+**Status:** Success
+**Notes:** `npm test` now runs and exits successfully; Vitest is installed as a devDependency. Watch-mode was avoided by using `vitest --run`.
+
